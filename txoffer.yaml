@@ -22,7 +22,7 @@ watch_directory: watch
 #
 # crc_validation: true
 
-crc_validation: true
+crc_validation: false
 
 # A glob-style pattern to match potential pack files against
 # Files not matching this pattern will not be offered
@@ -34,8 +34,7 @@ crc_validation: true
 #
 # Note: null can be used to include everything
 
-include:
-  - "*.mkv"
+include: null
 
 # A glob-style pattern for potential pack files to exclude
 # Files matching this pattern will not be offered
@@ -73,14 +72,7 @@ exclude: null
 #       - "#txoffer"
 #       - "##txoffer"
 
-irc:
-  - 
-    host: irc.rizon.net
-    port: 6667
-    nickname: CS|Shiroi
-    password: lolbotgroup
-    channels:
-      - "#commie-subs"
+irc: []
 
 ### WEB SERVER ###
 
@@ -91,7 +83,7 @@ irc:
 #
 # Note: null can be used to automatically detect IP
 
-address: shiroi.fugiman.com
+address: null
 
 # Override automatic port detection with this value
 # Useful if proxying behind nginx
@@ -109,7 +101,7 @@ port: null
 #
 # Note: null can be used to use the raw IP
 
-proxy_header: x-real-ip
+proxy_header: null
 
 # A list of ports to listen on
 #
@@ -130,8 +122,7 @@ tcp: []
 #
 # Note: use [] instead of null to not listen on any unix sockets
 
-unix:
-  - web.sock
+unix: []
 
 ### THROTTLING ###
 
@@ -141,7 +132,7 @@ unix:
 #
 # Note: null can be used for unlimited connections
 
-global_concurrent: 10
+global_concurrent: null
 
 # Max connections per IP
 # HTTP and XDCC use different pools, so it is possible
@@ -152,7 +143,7 @@ global_concurrent: 10
 #
 # Note: null can be used for unlimited connections
 
-ip_concurrent: 1
+ip_concurrent: null
 
 # Max bandwidth per connection (in bytes per second)
 #
