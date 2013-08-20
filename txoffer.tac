@@ -1079,6 +1079,7 @@ class Master(service.MultiService):
         for bot in self.bots:
             if bot.connection is not None:
                 for channel in bot.channels:
+                    channel, _, password = channel.partition(" ")
                     bot.connection.msg(channel, 'Pack #{0:d} added: {1} - Get it with "/msg {2} XDCC SEND {0:d}" or at {3}pack/{0:d}'.format(pack, name, bot.nickname, self.public_address))
 
     def addPack(self, filename):

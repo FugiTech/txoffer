@@ -63,14 +63,14 @@ exclude: null
 #     password: txoffer
 #     channels:
 #       - "#txoffer"
-#       - "##txoffer"
+#       - "##txoffer password"
 #   -
 #     host: irc.freenode.org
 #     port: 6667
 #     nickname: txoffer
 #     channels:
 #       - "#txoffer"
-#       - "##txoffer"
+#       - "##txoffer password"
 
 irc: []
 
