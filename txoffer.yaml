@@ -103,26 +103,16 @@ port: null
 
 proxy_header: null
 
-# A list of ports to listen on
+# A list of endpoints to listen on
 #
-# tcp:
-#   - 80
-#   - 8080
+# endpoints:
+#   - tcp:80
+#   - tcp:8080:interface=127.0.0.1
+#   - unix:txoffer.sock
 #
-# Note: use [] instead of null to not listen on any tcp ports
-# Note: list the same port twice to listen on ipv4 and ipv6
+# Note: use [] instead of null to not listen on any endpoints
 
-tcp: []
-
-# A list of unix sockets to listen on
-#
-# unix:
-#   - /var/run/txoffer.sock
-#   - /tmp/txoffer.sock
-#
-# Note: use [] instead of null to not listen on any unix sockets
-
-unix: []
+endpoints: []
 
 ### THROTTLING ###
 

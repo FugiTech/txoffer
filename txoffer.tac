@@ -2,7 +2,7 @@
 
 from pathtools.patterns import match_any_paths
 
-from twisted.application import internet, service
+from twisted.application import internet, service, strports
 from twisted.internet import reactor, tcp
 from twisted.internet.address import IPv4Address
 from twisted.internet.protocol import ReconnectingClientFactory
@@ -848,13 +848,8 @@ class Master(service.MultiService):
             srvc.setServiceParent(self)
             self.bots.append(factory)
 
-        for port in self.config["tcp"]:
-            srvc = internet.TCPServer(port, self.web)
-            srvc.setName("web_{:d}".format(port) if "web_{:d}".format(port) not in self.namedServices else "web_{:d}_ipv6".format(port))
-            srvc.setServiceParent(self)
-
-        for path in self.config["unix"]:
-            srvc = internet.UNIXServer(path, self.web)
+        for path in self.config["endpoints"]:
+            srvc = strports.service(path, self.web)
             srvc.setName("web_{}".format(path))
             srvc.setServiceParent(self)
 
@@ -879,10 +874,11 @@ class Master(service.MultiService):
             self.public_host = self.raw_host
             self.public_ip = self.raw_ip
 
+        tcp = map(lambda p: int(p.split(":")[1]), filter(lambda p: p.startswith("tcp"), self.config["endpoints"]))
         if self.config["port"]:
             self.public_port = self.config["port"]
-        elif self.config["tcp"] and 80 not in self.config["tcp"]:
-            self.public_port = self.config["tcp"][0]
+        elif tcp and 80 not in tcp:
+            self.public_port = tcp[0]
         else:
             self.public_port = 80
 
@@ -953,28 +949,8 @@ class Master(service.MultiService):
             srvc.stopService()
             self.bots.remove(srvc.factory)
 
-        # Have the web ports changed?
-        old_ports, new_ports = self.config["tcp"][:], config["tcp"][:]
-
-        # Determine which ports to stop, and which to start
-        for port in self.config["tcp"]:
-            if port in new_ports:
-                old_ports.remove(port)
-                new_ports.remove(port)
-
-        # Stop old ports
-        for port in old_ports:
-            srvc = self.getServiceNamed("web_{:d}".format(port) if not "web_{:d}_ipv6".format(port) in self.namedServices else "web_{:d}_ipv6".format(port))
-            srvc.stopService()
-
-        # Start new ports
-        for port in new_ports:
-            srvc = internet.TCPServer(port, self.web)
-            srvc.setName("web_{:d}".format(port) if "web_{:d}".format(port) not in self.namedServices else "web_{:d}_ipv6".format(port))
-            srvc.setServiceParent(self)
-
-        # Have the unix paths changed?
-        old_paths, new_paths = set(self.config["unix"]), set(config["unix"])
+        # Have the endpoints changed?
+        old_paths, new_paths = set(self.config["endpoints"]), set(config["endpoints"])
 
         # Stop old paths
         for path in (old_paths - new_paths):
@@ -983,7 +959,7 @@ class Master(service.MultiService):
 
         # Start new paths
         for path in (new_paths - old_paths):
-            srvc = internet.UNIXServer(path, self.web)
+            srvc = strports.service(path, self.web)
             srvc.setName("web_{}".format(path))
             srvc.setServiceParent(self)
 
@@ -991,7 +967,7 @@ class Master(service.MultiService):
         log.msg("Reloaded config")
 
     def validateConfig(self, config):
-        keys = ["watch_directory", "crc_validation", "include", "exclude", "irc", "address", "port", "proxy_header", "tcp", "unix", "global_concurrent", "ip_concurrent", "throttle", "timeout", "web_refresh", "infinity", "search_limit", "log_requests"]
+        keys = ["watch_directory", "crc_validation", "include", "exclude", "irc", "address", "port", "proxy_header", "endpoints", "global_concurrent", "ip_concurrent", "throttle", "timeout", "web_refresh", "infinity", "search_limit", "log_requests"]
         for key in keys:
             if key not in config:
                 raise ConfigException("Missing config option \"{}\"".format(key))
@@ -1062,25 +1038,15 @@ class Master(service.MultiService):
         if not isinstance(config["proxy_header"], basestring) and config["proxy_header"] is not None:
             raise ConfigException("proxy_header must be a string or null")
 
-        if not isinstance(config["tcp"], list):
-            raise ConfigException("tcp must be a list")
+        if not isinstance(config["endpoints"], list):
+            raise ConfigException("endpoints must be a list")
 
-        for value in config["tcp"]:
-            if not isinstance(value, int):
-                raise ConfigException("tcp must be a list of ints")
-
-        if max([0] + collections.Counter(config["tcp"]).values()) > 2:
-            raise ConfigException("tcp can only contain two of the same port")
-
-        if not isinstance(config["unix"], list):
-            raise ConfigException("unix must be a list")
-
-        for value in config["unix"]:
+        for value in config["endpoints"]:
             if not isinstance(value, basestring):
-                raise ConfigException("unix must be a list of strings")
+                raise ConfigException("endpoints must be a list of ints")
 
-        if max([0] + collections.Counter(config["unix"]).values()) > 1:
-            raise ConfigException("unix path must be unique")
+        if max([0] + collections.Counter(config["endpoints"]).values()) > 1:
+            raise ConfigException("endpoints must be unique")
 
         if not isinstance(config["global_concurrent"], int) and config["global_concurrent"] is not None:
             raise ConfigException("global_concurrent must be an int or null")
