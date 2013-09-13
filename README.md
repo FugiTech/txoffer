@@ -4,7 +4,7 @@ To install:
 
 To run:
 
-`twistd -y txoffer.tac`
+`twistd -y txoffer.py`
 
 To stop:
 

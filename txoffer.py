@@ -525,7 +525,7 @@ class ThrottledResource(Resource):
             r.unthrottle()
 
 class IndexElement(Element):
-    loader = XMLString("""<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1"><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Pack Listing</title><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400" /><style>/* <![CDATA[ */ body { text-align: center; font-family: Ubuntu, sans-serif; font-size: 16px; line-height: 34px; } #packs { display: inline-block; } .list { display: inline-block; text-align: left; min-width: 960px; margin: 0; padding: 0; } #packs > ul li { list-style: none; border-bottom: 1px solid #E8E8E8; } a, span { display: inline-block; } a { color: #333; width: 100%; text-decoration: none; } a:hover { color: #EE8800; cursor: pointer; } #header { text-align: left; margin: 20px 0 0 0; padding: 0; } #header span { color: #AAA; font-size: 13px; line-height: 18px; } span:first-child { text-align: right; width: 100px; } span:last-child { text-align: left; padding-left: 20px; } #search { float: left; margin: 0; padding: 0 6px; font-size: 20px; line-height: 26px; color: #666; } .paging { float: right; margin: 0; } .paging li { display: block; float: left; height: 30px; margin-left: 10px; background: #DDD; border-radius: 10px; list-style: none; font-size: 20px; font-weight: bold; line-height: 30px; padding: 0 8px; } .clearfix:after { content: ""; display: table; clear: both; } .sort { cursor: pointer; } .desc:after { /* Down arrow */ border-color: #AAA transparent; border-style: solid; border-width: 6px 6px 0px 6px; height: 0px; width: 0px; content: ""; position: relative; top: 10px; left: 4px; } .asc:after { /* Up arrow */ border-color: #AAA transparent; border-style: solid; border-width: 0px 6px 6px 6px; height: 0px; width: 0px; content: ""; position: relative; bottom: 10px; left: 4px; } /* ]]> */ </style><script src="/list.js"></script></head><body><div id="packs"><div id="controls" class="clearfix"><input type="text" id="search" value="Search..." /><ul class="paging"></ul></div><ul id="header"><li><span class="sort desc" data-sort="number">Pack Number</span><span class="sort" data-sort="name">Filename</span></li></ul><ul class="list"><li t:render="pack"><a><t:attr name="href"><t:slot name="link" /></t:attr><span class="number"><t:slot name="number" /></span><span class="name"><t:slot name="name" /></span></a></li></ul></div><script>/* <![CDATA[ */ var packs = new List("packs", { valueNames: ["number", "name"], page: 20, plugins: [ ["paging", { innerWindow: 1, outerWindow: 1 }], ["fuzzySearch"] ], indexAsync: true }); document.getElementById("search").addEventListener("keyup", function() { packs.fuzzySearch(this.value); }, false); document.getElementById("search").addEventListener("focus", function() { this.value = ""; }, false); /* ]]> */</script></body></html>""")
+    loader = XMLString("""<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1"><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Pack Listing</title><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400" /><style>/* <![CDATA[ */ body { text-align: center; font-family: Ubuntu, sans-serif; font-size: 16px; line-height: 34px; } #packs { display: inline-block; } .list { display: inline-block; text-align: left; min-width: 960px; margin: 0; padding: 0; } #packs > ul li { list-style: none; border-bottom: 1px solid #E8E8E8; } a, span { display: inline-block; } a { color: #333; width: 100%; text-decoration: none; } a:hover { color: #EE8800; cursor: pointer; } #header { text-align: left; margin: 20px 0 0 0; padding: 0; } #header span { color: #AAA; font-size: 13px; line-height: 18px; } span:first-child { text-align: right; width: 100px; } span:last-child { text-align: left; padding-left: 20px; } #search { float: left; margin: 0; padding: 0 6px; font-size: 20px; line-height: 26px; color: #666; } .paging { float: right; margin: 0; } .paging li { display: block; float: left; height: 30px; margin-left: 10px; background: #DDD; border-radius: 10px; list-style: none; font-size: 20px; font-weight: bold; line-height: 30px; padding: 0 8px; } .clearfix:after { content: ""; display: table; clear: both; } .sort { cursor: pointer; } .desc:after { /* Down arrow */ border-color: #AAA transparent; border-style: solid; border-width: 6px 6px 0px 6px; height: 0px; width: 0px; content: ""; position: relative; top: 10px; left: 4px; } .asc:after { /* Up arrow */ border-color: #AAA transparent; border-style: solid; border-width: 0px 6px 6px 6px; height: 0px; width: 0px; content: ""; position: relative; bottom: 10px; left: 4px; } /* ]]> */ </style><script src="/list.js"></script><script language="javascript" type="text/javascript"> /* <![CDATA[ */ function ToClipboard(txt) { if (window.clipboardData) { window.clipboardData.clearData(); window.clipboardData.setData("Text", txt); } else if(navigator.userAgent.indexOf("Opera")!=-1) { window.location=txt; } else if (window.netscape) { try { netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect"); } catch (e) { alert("Permission denied! Browse to 'about:config' in your browser\nand set 'signed.applets.codebase_principal_support' to true"); } var clip = Components.classes['@mozilla.org/widget/clipboard;1'].createInstance(Components.interfaces.nsIClipboard); if (!clip) return; var trans = Components.classes['@mozilla.org/widget/transferable;1'].createInstance(Components.interfaces.nsITransferable); if (!trans) return; trans.addDataFlavor('text/unicode'); var str = new Object(); var len = new Object(); var str = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString); var copytext=txt; str.data=copytext; trans.setTransferData("text/unicode",str,copytext.length*2); var clipid=Components.interfaces.nsIClipboard; if (!clip) return false; clip.setData(trans,null,clipid.kGlobalClipboard); } } /* ]]> */  </script></head><body><div id="packs"><div id="controls" class="clearfix"><input type="text" id="search" value="Search..." /><ul class="paging"></ul></div><ul id="header"><li><span class="sort desc" data-sort="number">Pack Number</span><span class="sort" data-sort="name">Filename</span></li></ul><ul class="list"><li t:render="pack"><a><t:attr name="href"><t:slot name="link" /></t:attr><span class="number"><t:slot name="number" /></span><span class="name"><t:slot name="name" /></span></a></li></ul></div><script>/* <![CDATA[ */ var packs = new List("packs", { valueNames: ["number", "name"], page: 20, plugins: [ ["paging", { innerWindow: 1, outerWindow: 1 }], ["fuzzySearch"] ], indexAsync: true }); document.getElementById("search").addEventListener("keyup", function() { packs.fuzzySearch(this.value); }, false); document.getElementById("search").addEventListener("focus", function() { this.value = ""; }, false); /* ]]> */</script></body></html>""")
     
     def __init__(self, master):
         self.master = master
@@ -533,7 +533,11 @@ class IndexElement(Element):
     @renderer
     def pack(self, request, tag):
         for number, name in reversed(self.master.packs.items()):
-            yield tag.clone().fillSlots(link="/pack/{:d}/{}".format(number, os.path.basename(name)), number="#{:d}".format(number), name=os.path.basename(name))
+            if self.master.config["web_function"] == "ddl":
+                link = "/pack/{:d}/{}".format(number, os.path.basename(name))
+            else:
+                link = "javascript:ToClipboard('/msg {} XDCC SEND {:d}')".format(self.master.config["irc"][0]["nickname"] if self.master.config["irc"] else "BOTNICK", number)
+            yield tag.clone().fillSlots(link=link, number="#{:d}".format(number), name=os.path.basename(name))
 
 class StatusElement(Element):
     loader = XMLString("""<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1"><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Status</title><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700" /><style> html { color: #333; font-family: Ubuntu, sans-serif; font-size: 16px; line-height: 34px; } h1, table { width: 90%; margin: 20px auto; } h1 { text-align: center; } table { margin-bottom: 60px; } </style></head><body><h1>Current Downloads (<t:transparent t:render="download_count" /> / <t:transparent t:render="download_max" />)</h1><table><tr><th>Started</th><th>Recipient</th><th>Filename</th><th>Downloaded</th><th>File Size</th><th>Percentage</th></tr><tr t:render="download"><td><t:slot name="started" /></td><td><t:slot name="recipient" /></td><td><t:slot name="filename" /></td><td><t:slot name="downloaded" /></td><td><t:slot name="filesize" /></td><td><t:slot name="percentage" /></td></tr></table><h1>Queued Downloads (<t:transparent t:render="queue_count" /> / <t:transparent t:render="queue_max" />)</h1><table><tr><th>Spot</th><th>Recipient</th><th>Filename</th></tr><tr t:render="queue"><td><t:slot name="spot" /></td><td><t:slot name="recipient" /></td><td><t:slot name="filename" /></td></tr></table></body></html>""")
@@ -656,6 +660,11 @@ class PackResource(NoResource):
 
     def getChild(self, path, request):
         request.postpath = []
+
+        if self.master.config["web_function"] != "ddl":
+            self.brief = "DDL Disabled"
+            self.detail = "The owner of this txoffer instance has chosen to disable DDL. Use XDCC or pester them to turn it back on."
+            return self
 
         try:
             number = int(path)
@@ -848,10 +857,11 @@ class Master(service.MultiService):
             srvc.setServiceParent(self)
             self.bots.append(factory)
 
-        for path in self.config["endpoints"]:
-            srvc = strports.service(path, self.web)
-            srvc.setName("web_{}".format(path))
-            srvc.setServiceParent(self)
+        if self.config["web_function"] != "nothing":
+            for path in self.config["endpoints"]:
+                srvc = strports.service(path, self.web)
+                srvc.setName("web_{}".format(path))
+                srvc.setServiceParent(self)
 
         return service.MultiService.startService(self)
 
@@ -952,6 +962,10 @@ class Master(service.MultiService):
         # Have the endpoints changed?
         old_paths, new_paths = set(self.config["endpoints"]), set(config["endpoints"])
 
+        # Hack in shutting down the webserver if web_function == nothing
+        if config["web_function"] == "nothing":
+            new_paths = set()
+
         # Stop old paths
         for path in (old_paths - new_paths):
             srvc = self.getServiceNamed("web_{}".format(path))
@@ -1028,6 +1042,12 @@ class Master(service.MultiService):
 
         if max([0] + collections.Counter(["{}:{:d}".format(d["host"], d["port"]) for d in config["irc"]]).values()) > 1:
             raise ConfigException("irc host+port must be unique")
+
+        if not isinstance(config["web_function"], basestring):
+            raise ConfigException("web_function must be a string")
+
+        if config["web_function"] not in ["ddl", "xdcc", "nothing"]:
+            raise ConfigException("web_function must be 'ddl', 'xdcc' or 'nothing'")
 
         if not isinstance(config["address"], basestring) and config["address"] is not None:
             raise ConfigException("address must be a string or null")

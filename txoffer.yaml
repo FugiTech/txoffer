@@ -76,6 +76,16 @@ irc: []
 
 ### WEB SERVER ###
 
+# What function the webserver fulfills
+#
+# "ddl" allows HTTP direct download
+# "xdcc" just lists packs and copies the IRC command to the user's clipboard
+# "nothing" disables the webserver completely
+#
+# web_function: ddl
+
+web_function: ddl
+
 # A nicely formatted address to give clients
 # Do not include a port number
 #
