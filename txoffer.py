@@ -1100,7 +1100,8 @@ class Master(service.MultiService):
             if bot.connection is not None:
                 for channel in bot.channels:
                     channel, _, password = channel.partition(" ")
-                    bot.connection.msg(channel, 'Pack #{0:d} added: {1} - Get it with "/msg {2} XDCC SEND {0:d}" or at {3}pack/{0:d}'.format(pack, name, bot.nickname, self.public_address))
+                    ddl = " or at {}pack/{:d}".format(self.public_address, pack) if self.config["web_function"] == "ddl" else ""
+                    bot.connection.msg(channel, 'Pack #{0:d} added: {1} - Get it with "/msg {2} XDCC SEND {0:d}"{3}'.format(pack, name, bot.nickname, ddl))
 
     def addPack(self, filename):
         if filename in self.pack_lookup:
