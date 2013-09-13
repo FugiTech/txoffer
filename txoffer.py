@@ -963,6 +963,9 @@ class Master(service.MultiService):
         old_paths, new_paths = set(self.config["endpoints"]), set(config["endpoints"])
 
         # Hack in shutting down the webserver if web_function == nothing
+        if self.config["web_function"] == "nothing":
+            old_paths = set()
+        
         if config["web_function"] == "nothing":
             new_paths = set()
 
