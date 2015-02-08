@@ -1,0 +1,26 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">    
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>
+            Queue
+        </title>
+        <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700" />
+        <style>
+            html {
+                font-family: Ubuntu, sans-serif;
+                font-size: 2em;
+                color: #333;
+                text-align: center;
+            }
+            h2 {
+                font-weight: normal;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>You are #<t:transparent t:render="position" /> in queue for:</h1>
+        <h2><t:transparent t:render="filename" /></h2>
+        <script>setTimeout(function() { location.reload(true); }, <t:transparent t:render="refresh" /> * 1000);</script>
+    </body>
+</html>

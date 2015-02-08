@@ -1,0 +1,65 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title>Pack Listing</title>
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400" />
+<style>/*<![CDATA[ */
+body { text-align: center; font-family: Ubuntu, sans-serif; font-size: 16px; line-height: 34px; } #packs { display: inline-block; } .list { display: inline-block; text-align: left; min-width: 960px; margin: 0; padding: 0; } #packs >
+ul li { list-style: none; border-bottom: 1px solid #E8E8E8; } a, span { display: inline-block; } a { color: #333; width: 100%; text-decoration: none; } a:hover { color: #EE8800; cursor: pointer; } #header { text-align: left; margin: 20px 0 0 0; padding: 0; } #header span { color: #AAA; font-size: 13px; line-height: 18px; }
+span:first-child {
+	text-align: right;
+	width: 100px;
+}
+span.size {
+	text-align: right;
+	width: 80px;
+}
+span:last-child { text-align: left; padding-left: 20px; } #search { float: left; margin: 0; padding: 0 6px; font-size: 20px; line-height: 26px; color: #666; } .paging { float: right; margin: 0; } .paging li { display: block; float: left; height: 30px; margin-left: 10px; background: #DDD; border-radius: 10px; list-style: none; font-size: 20px; font-weight: bold; line-height: 30px; padding: 0 8px; } .clearfix:after { content: ""; display: table; clear: both; } .sort { cursor: pointer; } .desc:after { /* Down arrow */ border-color: #AAA transparent; border-style: solid; border-width: 6px 6px 0px 6px; height: 0px; width: 0px; content: ""; position: relative; top: 10px; left: 4px; } .asc:after { /* Up arrow */ border-color: #AAA transparent; border-style: solid; border-width: 0px 6px 6px 6px; height: 0px; width: 0px; content: ""; position: relative; bottom: 10px; left: 4px; }
+/* ]]>*/</style>
+<script src="/list.js"></script>
+<script language="javascript" type="text/javascript">/*<![CDATA[ */
+function ToClipboard(txt) { if (window.clipboardData) { window.clipboardData.clearData(); window.clipboardData.setData("Text", txt); } else if(navigator.userAgent.indexOf("Opera")!=-1) { window.location=txt; } else if (window.netscape) { try { netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect"); } catch (e) { alert("Permission denied! Browse to 'about:config' in your browser\nand set 'signed.applets.codebase_principal_support' to true"); } var clip = Components.classes['@mozilla.org/widget/clipboard;1'].createInstance(Components.interfaces.nsIClipboard); if (!clip) return; var trans = Components.classes['@mozilla.org/widget/transferable;1'].createInstance(Components.interfaces.nsITransferable); if (!trans) return; trans.addDataFlavor('text/unicode'); var str = new Object(); var len = new Object(); var str = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString); var copytext=txt; str.data=copytext; trans.setTransferData("text/unicode",str,copytext.length*2); var clipid=Components.interfaces.nsIClipboard; if (!clip) return false; clip.setData(trans,null,clipid.kGlobalClipboard); } }
+/* ]]>*/</script>
+</head>
+<body>
+<div id="packs">
+	<div id="controls" class="clearfix">
+		<input type="text" id="search" value="Search..." />
+		<ul class="paging">
+		</ul>
+	</div>
+	<ul id="header">
+		<li>
+		<span class="sort desc" data-sort="number">
+			Pack Number</span>
+		<span class="size">
+			File size</span>
+		<span class="sort" data-sort="name">
+			Filename</span>
+		</li>
+	</ul>
+	<ul class="list">
+		<li t:render="pack">
+		<a>
+			<t:attr name="href">
+			<t:slot name="link" />
+			</t:attr>
+			<span class="number">
+				<t:slot name="number" />
+			</span>
+			<span class="size">
+				<t:slot name="size" />
+			</span>
+			<span class="name">
+				<t:slot name="name" />
+			</span>
+		</a>
+		</li>
+	</ul>
+</div>
+<script> /* <![CDATA[ */
+var packs = new List("packs", { valueNames: ["number", "name"], page: 20, plugins: [ ["paging", { innerWindow: 1, outerWindow: 1 }], ["fuzzySearch"] ], indexAsync: true }); document.getElementById("search").addEventListener("keyup", function() { packs.fuzzySearch(this.value); }, false); document.getElementById("search").addEventListener("focus", function() { this.value = ""; }, false);
+/* ]]> */ </script>
+</body>
+</html>
