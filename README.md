@@ -1,6 +1,6 @@
 This is the current version running on CS|Tori and Vivid|Hii among a few other bots on Rizon.
 Supports outputting a packs.txt to integrate with other services.
-See [nginx.example](txoffer/nginx.example) for example ddl setup.
+See [nginx.example](nginx.example) for example ddl setup.
 
 To install:
 
