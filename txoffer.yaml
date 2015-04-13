@@ -1,194 +1,37 @@
-# The configuration file for txoffer
-# 
-# This file is broken up into sections based on what part of
-# the program it effects. Each parameter is explained, and
-# an example configuration given. These examples are not the
-# defaults. TXOFFER DOES NOT PROVIDE DEFAULT VALUES! What
-# is specified in this document is what is used, so any
-# misconfiguration can lead to unpredictability in the program.
-
-
-#### PACK DETECTION ###
-
-# The directory to find pack files in
-#
-# watch_directory: watch
-
-watch_directory: watch
-
-# Whether to validate CRCs before adding files to the packlist
-# If enabled, searches the filename for an eight character
-# CRC surrounded in brackets - [A0B1C2D3]
-#
-# crc_validation: true
-
-crc_validation: false
-
-# A glob-style pattern to match potential pack files against
-# Files not matching this pattern will not be offered
-# Matched against the absolute path of the file
-#
-# include:
-#   - "*.mp3"
-#   - "*.png"
-#
-# Note: null can be used to include everything
-
-include: null
-
-# A glob-style pattern for potential pack files to exclude
-# Files matching this pattern will not be offered
-# Matched against the absolute path of the file
-# Overrides include
-#
-# exclude:
-#   - "*.tmp"
-#   - "*/.*"
-#
-# Note: null can be used to exclude nothing
-
+watch_directory: /path/to/files
+crc_validation: true
+include:
+  - "*.mkv"
+  - "*.zip"
+  - "*.rar"
 exclude: null
-
-### IRC BOT ###
-
-# A list of connections to make
-# Each connection must specify a host, port, nickname, and list of channels
-# Each connection may specify a nickserv password
-#
-# irc:
-#   -
-#     host: irc.rizon.net
-#     port: 6667
-#     nickname: txoffer
-#     password: txoffer
-#     channels:
-#       - "#txoffer"
-#       - "##txoffer password"
-#   -
-#     host: irc.freenode.org
-#     port: 6667
-#     nickname: txoffer
-#     channels:
-#       - "#txoffer"
-#       - "##txoffer password"
-
-irc: []
-
-### WEB SERVER ###
-
-# What function the webserver fulfills
-#
-# "ddl" allows HTTP direct download
-# "xdcc" just lists packs and copies the IRC command to the user's clipboard
-# "nothing" disables the webserver completely
-#
-# web_function: ddl
-
+irc:
+  -
+    host: irc.rizon.net
+    port: 6667
+    nickname: yournick
+    password: yourpass
+    channels:
+      - "#chan1"
+      - "#chan2"
+      - "#chan3"
+      - "#chan4"
+      - "#chan5"
+      - "#chan6"
+# can be 'ddl' 'xdcc' or 'nothing'
 web_function: ddl
-
-# A nicely formatted address to give clients
-# Do not include a port number
-#
-# address: www.example.com
-#
-# Note: null can be used to automatically detect IP
-
-address: null
-
-# Override automatic port detection with this value
-# Useful if proxying behind nginx
-#
-# port: 8080
-#
-# Note: null can be used to automatically detect port
-
+# put your web address here
+address: xdcc.domain.com
 port: null
-
-# Use specified header to determine client IP
-# Useful if proxying behind nginx
-#
-# proxy_header: x-real-ip
-#
-# Note: null can be used to use the raw IP
-
+# best to just use a unix sock here
+endpoints: 
+  - unix:somename.sock
 proxy_header: null
-
-# A list of endpoints to listen on
-#
-# endpoints:
-#   - tcp:80
-#   - tcp:8080:interface=127.0.0.1
-#   - unix:txoffer.sock
-#
-# Note: use [] instead of null to not listen on any endpoints
-
-endpoints: []
-
-### THROTTLING ###
-
-# Max global connections
-#
-# global_concurrent: 100
-#
-# Note: null can be used for unlimited connections
-
-global_concurrent: null
-
-# Max connections per IP
-# HTTP and XDCC use different pools, so it is possible
-# for users to use twice the connections specified here
-# if they use both services simultaneously
-#
-# ip_concurrent: 1
-#
-# Note: null can be used for unlimited connections
-
+global_concurrent: 60
 ip_concurrent: null
-
-# Max bandwidth per connection (in bytes per second)
-#
-# throttle: 500000
-#
-# Note: null can be used for unlimited bandwidth
-
 throttle: null
-
-# Connection Timeout (in seconds)
-# How long to wait for the XDCC SEND or HTTP download
-# to be accepted and start
-#
-# timeout: 15
-
-timeout: 60
-
-# How often users waiting in the HTTP queue refresh the page
-# Should be less than the timeout
-#
-# web_refresh: 10
-
+timeout: 150
 web_refresh: 40
-
-### MISCELLANEOUS ###
-
-# The string to use for representing unlimited connections
-# or unlimited bandwidth
-#
-# infinity: "\u221E"
-
 infinity: "\u221E"
-
-# Maximum number of search results
-# Search results include filenames, which can be quite long
-# Keep this low to prevent flooding
-#
-# search_limit: 5
-
 search_limit: 3
-
-# Whether to log what files we send to whom
-# Turn off if you don't want to be responsible for such data
-# (or if it is filling up your harddrive)
-#
-# log_requests: true
-
 log_requests: true

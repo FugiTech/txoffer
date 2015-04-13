@@ -10,10 +10,11 @@ from twisted.internet.task import LoopingCall
 from twisted.protocols.policies import ThrottlingFactory
 from twisted.protocols.tls import _PullToPush
 from twisted.python import log, logfile
+from twisted.python.filepath import FilePath
 from twisted.web.resource import EncodingResourceWrapper, ErrorPage, NoResource, Resource
 from twisted.web.server import GzipEncoderFactory, NOT_DONE_YET, Site
 from twisted.web.static import File
-from twisted.web.template import Element, flatten, renderer, XMLString
+from twisted.web.template import Element, flatten, renderer, XMLString, XMLFile
 from twisted.words.protocols.irc import DccSendProtocol, DccSendFactory, fileSize, IRCClient
 
 from watchdog.events import PatternMatchingEventHandler, LoggingEventHandler
@@ -51,9 +52,9 @@ def timedeltaToHuman(td, short=False):
 
 def bytesToHuman(num):
     for x in ['B','KB','MB','GB']:
-        if num < 1024.0:
+        if num < 1000.0:
             return "{:3.1f}{}".format(num, x)
-        num /= 1024.0
+        num /= 1000.0
     return "{:3.1f}{}".format(num, 'TB')
 
 # Detect file creation
@@ -198,7 +199,7 @@ class QuietPort(tcp.Port):
     # Get rid of shutdown logging as well
     def _logConnectionLostMsg(self):
         pass
-    
+
 class Bot(IRCClient):
     lineRate = 0.400
     sourceURL = "https://github.com/Fugiman/txoffer"
@@ -273,7 +274,7 @@ class Bot(IRCClient):
         args = ["SEND", '"{}"'.format(name), host, port]
         if size is not None:
             args.append(size)
-        
+
         self.factory.master.downloads[hostmask][number]["factory"] = factory
         self.factory.master.downloads[hostmask][number]["address"] = address
         self.factory.master.downloads[hostmask][number]["port"] = port
@@ -525,22 +526,26 @@ class ThrottledResource(Resource):
             r.unthrottle()
 
 class IndexElement(Element):
-    loader = XMLString("""<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1"><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Pack Listing</title><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400" /><style>/* <![CDATA[ */ body { text-align: center; font-family: Ubuntu, sans-serif; font-size: 16px; line-height: 34px; } #packs { display: inline-block; } .list { display: inline-block; text-align: left; min-width: 960px; margin: 0; padding: 0; } #packs > ul li { list-style: none; border-bottom: 1px solid #E8E8E8; } a, span { display: inline-block; } a { color: #333; width: 100%; text-decoration: none; } a:hover { color: #EE8800; cursor: pointer; } #header { text-align: left; margin: 20px 0 0 0; padding: 0; } #header span { color: #AAA; font-size: 13px; line-height: 18px; } span:first-child { text-align: right; width: 100px; } span:last-child { text-align: left; padding-left: 20px; } #search { float: left; margin: 0; padding: 0 6px; font-size: 20px; line-height: 26px; color: #666; } .paging { float: right; margin: 0; } .paging li { display: block; float: left; height: 30px; margin-left: 10px; background: #DDD; border-radius: 10px; list-style: none; font-size: 20px; font-weight: bold; line-height: 30px; padding: 0 8px; } .clearfix:after { content: ""; display: table; clear: both; } .sort { cursor: pointer; } .desc:after { /* Down arrow */ border-color: #AAA transparent; border-style: solid; border-width: 6px 6px 0px 6px; height: 0px; width: 0px; content: ""; position: relative; top: 10px; left: 4px; } .asc:after { /* Up arrow */ border-color: #AAA transparent; border-style: solid; border-width: 0px 6px 6px 6px; height: 0px; width: 0px; content: ""; position: relative; bottom: 10px; left: 4px; } /* ]]> */ </style><script src="/list.js"></script><script language="javascript" type="text/javascript"> /* <![CDATA[ */ function ToClipboard(txt) { if (window.clipboardData) { window.clipboardData.clearData(); window.clipboardData.setData("Text", txt); } else if(navigator.userAgent.indexOf("Opera")!=-1) { window.location=txt; } else if (window.netscape) { try { netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect"); } catch (e) { alert("Permission denied! Browse to 'about:config' in your browser\nand set 'signed.applets.codebase_principal_support' to true"); } var clip = Components.classes['@mozilla.org/widget/clipboard;1'].createInstance(Components.interfaces.nsIClipboard); if (!clip) return; var trans = Components.classes['@mozilla.org/widget/transferable;1'].createInstance(Components.interfaces.nsITransferable); if (!trans) return; trans.addDataFlavor('text/unicode'); var str = new Object(); var len = new Object(); var str = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString); var copytext=txt; str.data=copytext; trans.setTransferData("text/unicode",str,copytext.length*2); var clipid=Components.interfaces.nsIClipboard; if (!clip) return false; clip.setData(trans,null,clipid.kGlobalClipboard); } } /* ]]> */  </script></head><body><div id="packs"><div id="controls" class="clearfix"><input type="text" id="search" value="Search..." /><ul class="paging"></ul></div><ul id="header"><li><span class="sort desc" data-sort="number">Pack Number</span><span class="sort" data-sort="name">Filename</span></li></ul><ul class="list"><li t:render="pack"><a><t:attr name="href"><t:slot name="link" /></t:attr><span class="number"><t:slot name="number" /></span><span class="name"><t:slot name="name" /></span></a></li></ul></div><script>/* <![CDATA[ */ var packs = new List("packs", { valueNames: ["number", "name"], page: 20, plugins: [ ["paging", { innerWindow: 1, outerWindow: 1 }], ["fuzzySearch"] ], indexAsync: true }); document.getElementById("search").addEventListener("keyup", function() { packs.fuzzySearch(this.value); }, false); document.getElementById("search").addEventListener("focus", function() { this.value = ""; }, false); /* ]]> */</script></body></html>""")
-    
+    loader = XMLFile(FilePath('web/index.html'))
+
     def __init__(self, master):
         self.master = master
 
     @renderer
     def pack(self, request, tag):
         for number, name in reversed(self.master.packs.items()):
+	    size = self.master.pack_size[number]
+	    if size == 0:
+	        continue
             if self.master.config["web_function"] == "ddl":
                 link = "/pack/{:d}/{}".format(number, os.path.basename(name))
             else:
                 link = "javascript:ToClipboard('/msg {} XDCC SEND {:d}')".format(self.master.config["irc"][0]["nickname"] if self.master.config["irc"] else "BOTNICK", number)
-            yield tag.clone().fillSlots(link=link, number="#{:d}".format(number), name=os.path.basename(name))
+#            size = bytesToHuman(self.master.pack_size[number])
+            yield tag.clone().fillSlots(link=link, size=bytesToHuman(size), number="#{:d}".format(number), name=os.path.basename(name))
 
 class StatusElement(Element):
-    loader = XMLString("""<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1"><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Status</title><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700" /><style> html { color: #333; font-family: Ubuntu, sans-serif; font-size: 16px; line-height: 34px; } h1, table { width: 90%; margin: 20px auto; } h1 { text-align: center; } table { margin-bottom: 60px; } </style></head><body><h1>Current Downloads (<t:transparent t:render="download_count" /> / <t:transparent t:render="download_max" />)</h1><table><tr><th>Started</th><th>Recipient</th><th>Filename</th><th>Downloaded</th><th>File Size</th><th>Percentage</th></tr><tr t:render="download"><td><t:slot name="started" /></td><td><t:slot name="recipient" /></td><td><t:slot name="filename" /></td><td><t:slot name="downloaded" /></td><td><t:slot name="filesize" /></td><td><t:slot name="percentage" /></td></tr></table><h1>Queued Downloads (<t:transparent t:render="queue_count" /> / <t:transparent t:render="queue_max" />)</h1><table><tr><th>Spot</th><th>Recipient</th><th>Filename</th></tr><tr t:render="queue"><td><t:slot name="spot" /></td><td><t:slot name="recipient" /></td><td><t:slot name="filename" /></td></tr></table></body></html>""")
+    loader = XMLFile(FilePath('web/status.html'))
 
     def __init__(self, master):
         self.master = master
@@ -586,7 +591,7 @@ class StatusElement(Element):
             yield tag.clone().fillSlots(**slots)
 
 class QueueElement(Element):
-    loader = XMLString("""<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1"><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Queue</title><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700" /><style> html { font-family: Ubuntu, sans-serif; font-size: 2em; color: #333; text-align: center; } h2 { font-weight: normal; } </style></head><body><h1>You are #<t:transparent t:render="position" /> in queue for:</h1><h2><t:transparent t:render="filename" /></h2><script>setTimeout(function() { location.reload(true); }, <t:transparent t:render="refresh" /> * 1000);</script></body></html>""")
+    loader = XMLFile(FilePath('web/queue.html'))
 
     def __init__(self, master, filename, position):
         self.master = master
@@ -624,6 +629,20 @@ class RobotResource(Resource):
     def render_GET(self, request):
         return "User-agent: *\nDisallow: /"
 
+class PacksTxtResource(Resource):
+    isLeaf = True
+
+    def render_GET(self, request):
+        request.setHeader('content-type', 'text/plain')
+        for number, name in self.master.packs.items():
+            size = self.master.pack_size[number]
+	    if size == 0:
+	        continue
+            name = os.path.basename(name)
+            request.write("#%s [%s]\t%s\n" % (number, bytesToHuman(size), name))
+        request.finish()
+        return NOT_DONE_YET
+
 class StatusResource(Resource):
     isLeaf = True
 
@@ -633,23 +652,15 @@ class StatusResource(Resource):
         d = flatten(request, StatusElement(self.master), request.write)
         d.addCallback(lambda _: request.finish())
         d.addErrback(request.processingFailed)
-        
+
         return NOT_DONE_YET
 
 class ListResource(Resource):
     isLeaf = True
 
     def render_GET(self, request):
-        return """
-// List.js
-(function(a,b){"use strict";var c=a.document,d;var e=function(a,e,f){var g=this,i,j,k,l,m,n,o={updated:[]};this.listContainer=typeof a=="string"?c.getElementById(a):a;if(!this.listContainer)return;this.items=[];this.visibleItems=[];this.matchingItems=[];this.searched=false;this.filtered=false;this.list=null;this.templateEngines={};this.page=e.page||200;this.i=e.i||1;j={start:function(a,b){b.plugins=b.plugins||{};this.classes(b);i=new m(g,b);this.callbacks(b);this.items.start(a,b);g.update();this.plugins(b.plugins)},classes:function(a){a.listClass=a.listClass||"list";a.searchClass=a.searchClass||"search";a.sortClass=a.sortClass||"sort"},callbacks:function(a){g.list=d.getByClass(a.listClass,g.listContainer,true);d.addEvent(d.getByClass(a.searchClass,g.listContainer),"keyup",g.search);n=d.getByClass(a.sortClass,g.listContainer);d.addEvent(n,"click",g.sort)},items:{start:function(a,c){if(c.valueNames){var d=this.get(),e=c.valueNames;if(c.indexAsync){this.indexAsync(d,e)}else{this.index(d,e)}}if(a!==b){g.add(a)}},get:function(){var a=g.list.childNodes,c=[];for(var d=0,e=a.length;d<e;d++){if(a[d].data===b){c.push(a[d])}}return c},index:function(a,b){for(var c=0,d=a.length;c<d;c++){g.items.push(new l(b,a[c]))}},indexAsync:function(a,b){var c=a.splice(0,100);this.index(c,b);if(a.length>0){setTimeout(function(){j.items.indexAsync(a,b)},10)}else{g.update()}}},plugins:function(a){var b={templater:i,init:j,initialItems:k,Item:l,Templater:m,sortButtons:n,events:o,reset:r};for(var c=0;c<a.length;c++){a[c][1]=a[c][1]||{};var d=a[c][1].name||a[c][0];g[d]=g.plugins[a[c][0]].call(g,b,a[c][1])}}};this.add=function(a,c){if(c){p(a,c)}var d=[],e=false;if(a[0]===b){a=[a]}for(var f=0,h=a.length;f<h;f++){var i=null;if(a[f]instanceof l){i=a[f];i.reload()}else{e=g.items.length>g.page?true:false;i=new l(a[f],b,e)}g.items.push(i);d.push(i)}g.update();return d};var p=function(a,b,c){var d=a.splice(0,100);c=c||[];c=c.concat(g.add(d));if(a.length>0){setTimeout(function(){p(a,b,c)},10)}else{g.update();b(c)}};this.show=function(a,b){this.i=a;this.page=b;g.update()};this.remove=function(a,b,c){var d=0;for(var e=0,f=g.items.length;e<f;e++){if(g.items[e].values()[a]==b){i.remove(g.items[e],c);g.items.splice(e,1);f--;d++}}g.update();return d};this.get=function(a,b){var c=[];for(var d=0,e=g.items.length;d<e;d++){var f=g.items[d];if(f.values()[a]==b){c.push(f)}}if(c.length==0){return null}else if(c.length==1){return c[0]}else{return c}};this.sort=function(a,c){var e=g.items.length,f=null,i=a.target||a.srcElement,j="",k=false,l="asc",m="desc",c=c||{};if(i===b){f=a;k=c.asc||false}else{f=d.getAttribute(i,"data-sort");k=d.hasClass(i,l)?false:true}for(var o=0,p=n.length;o<p;o++){d.removeClass(n[o],l);d.removeClass(n[o],m)}if(k){if(i!==b){d.addClass(i,l)}k=true}else{if(i!==b){d.addClass(i,m)}k=false}if(c.sortFunction){c.sortFunction=c.sortFunction}else{c.sortFunction=function(a,b){return d.sorter.alphanum(a.values()[f].toLowerCase(),b.values()[f].toLowerCase(),k)}}g.items.sort(c.sortFunction);g.update()};this.search=function(a,c){g.i=1;var d=[],e,f,h,j,k,c=c===b?g.items[0].values():c,a=a===b?"":a,l=a.target||a.srcElement;a=l===b?(""+a).toLowerCase():""+l.value.toLowerCase();k=g.items;a=a.replace(/[-[\]{}()*+?.,\\^$|#\s]/g,"\\$&");i.clear();if(a===""){r.search();g.searched=false;g.update()}else{g.searched=true;for(var m=0,n=k.length;m<n;m++){e=false;f=k[m];j=f.values();for(var o in c){if(j.hasOwnProperty(o)&&c[o]!==null){h=j[o]!=null?j[o].toString().toLowerCase():"";if(a!==""&&h.search(a)>-1){e=true}}}if(e){f.found=true;d.push(f)}else{f.found=false}}g.update()}return g.visibleItems};this.filter=function(a){g.i=1;r.filter();if(a===b){g.filtered=false}else{g.filtered=true;var c=g.items;for(var d=0,e=c.length;d<e;d++){var f=c[d];if(a(f)){f.filtered=true}else{f.filtered=false}}}g.update();return g.visibleItems};this.size=function(){return g.items.length};this.clear=function(){i.clear();g.items=[]};this.on=function(a,b){o[a].push(b)};var q=function(a){var b=o[a].length;while(b--){o[a][b]()}};var r={filter:function(){var a=g.items,b=a.length;while(b--){a[b].filtered=false}},search:function(){var a=g.items,b=a.length;while(b--){a[b].found=false}}};this.update=function(){var a=g.items,b=a.length;g.visibleItems=[];g.matchingItems=[];i.clear();for(var c=0;c<b;c++){if(a[c].matching()&&g.matchingItems.length+1>=g.i&&g.visibleItems.length<g.page){a[c].show();g.visibleItems.push(a[c]);g.matchingItems.push(a[c])}else if(a[c].matching()){g.matchingItems.push(a[c]);a[c].hide()}else{a[c].hide()}}q("updated")};l=function(a,c,d){var e=this,f={};this.found=false;this.filtered=false;var h=function(a,c,d){if(c===b){if(d){e.values(a,d)}else{e.values(a)}}else{e.elm=c;var f=i.get(e,a);e.values(f)}};this.values=function(a,c){if(a!==b){for(var d in a){f[d]=a[d]}if(c!==true){i.set(e,e.values())}}else{return f}};this.show=function(){i.show(e)};this.hide=function(){i.hide(e)};this.matching=function(){return g.filtered&&g.searched&&e.found&&e.filtered||g.filtered&&!g.searched&&e.filtered||!g.filtered&&g.searched&&e.found||!g.filtered&&!g.searched};this.visible=function(){return e.elm.parentNode?true:false};h(a,c,d)};m=function(a,c){if(c.engine===b){c.engine="standard"}else{c.engine=c.engine.toLowerCase()}return new g.constructor.prototype.templateEngines[c.engine](a,c)};j.start(f,e)};e.prototype.templateEngines={};e.prototype.plugins={};e.prototype.templateEngines.standard=function(a,e){function j(a){if(a===b){var d=f.childNodes,g=[];for(var h=0,i=d.length;h<i;h++){if(d[h].data===b){return d[h]}}return null}else if(a.indexOf("<")!==-1){var j=c.createElement("div");j.innerHTML=a;return j.firstChild}else{return c.getElementById(e.item)}}var f=d.getByClass(e.listClass,a.listContainer,true),g=j(e.item),i=this;var k={created:function(a){if(a.elm===b){i.create(a)}}};this.get=function(a,b){k.created(a);var c={};for(var e=0,f=b.length;e<f;e++){var g=d.getByClass(b[e],a.elm,true);c[b[e]]=g?g.innerHTML:""}return c};this.set=function(a,b){k.created(a);for(var c in b){if(b.hasOwnProperty(c)){var e=d.getByClass(c,a.elm,true);if(e){e.innerHTML=b[c]}}}};this.create=function(a){if(a.elm!==b){return}var c=g.cloneNode(true);c.id="";a.elm=c;i.set(a,a.values())};this.remove=function(a){f.removeChild(a.elm)};this.show=function(a){k.created(a);f.appendChild(a.elm)};this.hide=function(a){if(a.elm!==b&&a.elm.parentNode===f){f.removeChild(a.elm)}};this.clear=function(){if(f.hasChildNodes()){while(f.childNodes.length>=1){f.removeChild(f.firstChild)}}}};d={getByClass:function(){if(c.getElementsByClassName){return function(a,b,c){if(c){return b.getElementsByClassName(a)[0]}else{return b.getElementsByClassName(a)}}}else{return function(a,b,d){var e=[],f="*";if(b==null){b=c}var g=b.getElementsByTagName(f);var h=g.length;var i=new RegExp("(^|\\s)"+a+"(\\s|$)");for(var j=0,k=0;j<h;j++){if(i.test(g[j].className)){if(d){return g[j]}else{e[k]=g[j];k++}}}return e}}}(),addEvent:function(a,c){if(c.addEventListener){return function(c,e,f){if(c&&!(c instanceof Array)&&!c.length&&!d.isNodeList(c)&&c.length!==0||c===a){c.addEventListener(e,f,false)}else if(c&&c[0]!==b){var g=c.length;for(var i=0;i<g;i++){d.addEvent(c[i],e,f)}}}}else if(c.attachEvent){return function(c,e,f){if(c&&!(c instanceof Array)&&!c.length&&!d.isNodeList(c)&&c.length!==0||c===a){c.attachEvent("on"+e,function(){return f.call(c,a.event)})}else if(c&&c[0]!==b){var g=c.length;for(var i=0;i<g;i++){d.addEvent(c[i],e,f)}}}}}(this,c),getAttribute:function(a,c){var d=a.getAttribute&&a.getAttribute(c)||null;if(!d){var e=a.attributes;var f=e.length;for(var g=0;g<f;g++){if(c[g]!==b){if(c[g].nodeName===c){d=c[g].nodeValue}}}}return d},isNodeList:function(a){var b=Object.prototype.toString.call(a);if(typeof a==="object"&&/^\[object (HTMLCollection|NodeList|Object)\]$/.test(b)&&(a.length==0||typeof a[0]==="object"&&a[0].nodeType>0)){return true}return false},hasClass:function(a,b){var c=this.getAttribute(a,"class")||this.getAttribute(a,"className")||"";return c.search(b)>-1},addClass:function(a,b){if(!this.hasClass(a,b)){var c=this.getAttribute(a,"class")||this.getAttribute(a,"className")||"";c=c+" "+b+" ";c=c.replace(/\s{2,}/g," ");a.setAttribute("class",c)}},removeClass:function(a,b){if(this.hasClass(a,b)){var c=this.getAttribute(a,"class")||this.getAttribute(a,"className")||"";c=c.replace(b,"");a.setAttribute("class",c)}},sorter:{alphanum:function(a,c,d){if(a===b||a===null){a=""}if(c===b||c===null){c=""}a=a.toString().replace(/&(lt|gt);/g,function(a,b){return b=="lt"?"<":">"});a=a.replace(/<\/?[^>]+(>|$)/g,"");c=c.toString().replace(/&(lt|gt);/g,function(a,b){return b=="lt"?"<":">"});c=c.replace(/<\/?[^>]+(>|$)/g,"");var e=this.chunkify(a);var f=this.chunkify(c);for(var g=0;e[g]&&f[g];g++){if(e[g]!==f[g]){var h=Number(e[g]),i=Number(f[g]);if(d){if(h==e[g]&&i==f[g]){return h-i}else{return e[g]>f[g]?1:-1}}else{if(h==e[g]&&i==f[g]){return i-h}else{return e[g]>f[g]?-1:1}}}}return e.length-f.length},chunkify:function(a){var b=[],c=0,d=-1,e=0,f,g;while(f=(g=a.charAt(c++)).charCodeAt(0)){var h=f==45||f==46||f>=48&&f<=57;if(h!==e){b[++d]="";e=h}b[d]+=g}return b}}};a.List=e;a.ListJsHelpers=d})(window)
-
-// List.js Paging Plugin
-List.prototype.plugins.paging=function(a,b){var c=this;var d;var e=function(){b=b||{};d=new List(c.listContainer.id,{listClass:b.pagingClass||"paging",item:"<li><div class='page'></div></li>",valueNames:["page","dotted"],searchClass:"nosearchclass",sortClass:"nosortclass"});c.on("updated",f);f()};var f=function(){var a=c.matchingItems.length,e=c.i,f=c.page,i=Math.ceil(a/f),j=Math.ceil(e/f),k=b.innerWindow||2,l=b.left||b.outerWindow||0,m=b.right||b.outerWindow||0,m=i-m;d.clear();for(var n=1;n<=i;n++){var o=j===n?"active":"";if(g.number(n,l,m,j,k)){var p=d.add({page:"<a class='"+o+"' href='javascript:function Z(){Z=\"\"}Z()'>"+n+"</a>",dotted:false})[0];h(p.elm,n,f)}else if(g.dotted(n,l,m,j,k,d.size())){d.add({page:"...",dotted:true})}}};var g={number:function(a,b,c,d,e){return this.left(a,b)||this.right(a,c)||this.innerWindow(a,d,e)},left:function(a,b){return a<=b},right:function(a,b){return a>b},innerWindow:function(a,b,c){return a>=b-c&&a<=b+c},dotted:function(a,b,c,d,e,f){return this.dottedLeft(a,b,c,d,e)||this.dottedRight(a,b,c,d,e,f)},dottedLeft:function(a,b,c,d,e){return a==b+1&&!this.innerWindow(a,d,e)&&!this.right(a,c)},dottedRight:function(a,b,c,e,f,g){if(d.items[g-1].values().dotted){return false}else{return a==c&&!this.innerWindow(a,e,f)&&!this.right(a,c)}}};var h=function(a,b,d){ListJsHelpers.addEvent(a,"click",function(){c.show((b-1)*d+1,d)})};e();return this}
-
-// List.js Fuzzy Search Plugin
-List.prototype.plugins.fuzzySearch=function(a,b){var c=this;var d=function(a,b,c){function i(a,c){var d=a/b.length,f=Math.abs(g-c);if(!e){return f?1:d}return d+f/e}var d=c.location||0;var e=c.distance||100;var f=c.threshold||.4;if(b===a)return true;if(b.length>32)return false;var g=d,h=function(){var a={};for(var c=0;c<b.length;c++){a[b.charAt(c)]=0}for(var c=0;c<b.length;c++){a[b.charAt(c)]|=1<<b.length-c-1}return a}();var j=f,k=a.indexOf(b,g);if(k!=-1){j=Math.min(i(0,k),j);k=a.lastIndexOf(b,g+b.length);if(k!=-1){j=Math.min(i(0,k),j)}}var l=1<<b.length-1;k=-1;var m,n;var o=b.length+a.length;var p;for(var q=0;q<b.length;q++){m=0;n=o;while(m<n){if(i(q,g+n)<=j){m=n}else{o=n}n=Math.floor((o-m)/2+m)}o=n;var r=Math.max(1,g-n+1);var s=Math.min(g+n,a.length)+b.length;var t=Array(s+2);t[s+1]=(1<<q)-1;for(var u=s;u>=r;u--){var v=h[a.charAt(u-1)];if(q===0){t[u]=(t[u+1]<<1|1)&v}else{t[u]=(t[u+1]<<1|1)&v|((p[u+1]|p[u])<<1|1)|p[u+1]}if(t[u]&l){var w=i(q,u-1);if(w<=j){j=w;k=u-1;if(k>g){r=Math.max(1,2*g-k)}else{break}}}}if(i(q+1,g)>j){break}p=t}return k<0?false:true};return function(){var e=function(e,f){c.i=1;var g,h,i=[],j,k,l,m,n,o=typeof b.multiSearch!=="boolean"?true:b.multiSearch,f=f===undefined?c.items[0].values():f,e=e===undefined?"":e,p=e.target||e.srcElement;e=p===undefined?(""+e).toLowerCase():""+p.value.toLowerCase();n=c.items;g=o?e.replace(/ +$/,"").split(/ +/):[e];a.templater.clear();if(e===""){a.reset.search();c.searched=false;c.update()}else{c.searched=true;for(var q=0,r=n.length;q<r;q++){j=true;k=n[q];m=k.values();for(var s=0;s<g.length;s++){h=false;for(var t in f){if(m.hasOwnProperty(t)&&f[t]!==null){l=m[t]!=null?m[t].toString().toLowerCase():"";if(d(l,g[s],b)){h=true}}}if(!h)j=false}if(j){k.found=true;i.push(k)}else{k.found=false}}c.update()}return c.visibleItems},f;return function(){var a=this,b=arguments;var c=function(){f=null;e.apply(a,b)};clearTimeout(f);f=setTimeout(c,100)}}()}
-"""
+        with open('web/list.js') as f:
+            return f.read()
 
 class PackResource(NoResource):
     def __init__(self):
@@ -710,7 +721,7 @@ class PackResource(NoResource):
                 d = flatten(request, element, request.write)
                 d.addCallback(lambda _: request.finish())
                 d.addErrback(request.processingFailed)
-                
+
                 self.type = self.types.QUEUE
                 return self
 
@@ -738,15 +749,17 @@ class Web(Site):
         listjs = ListResource()
         status = StatusResource()
         pack = PackResource()
+        packs = PacksTxtResource()
 
         index.factory = robot.factory = listjs.factory = status.factory = pack.factory = self
-        self.master = index.master = robot.master = listjs.master = status.master = pack.master = master
+        self.master = index.master = robot.master = listjs.master = status.master = pack.master = packs.master = master
 
         Site.__init__(self, EncodingResourceWrapper(index, [GzipEncoderFactory()]))
         index.putChild("robots.txt", robot) # No reason to bother gzipping this
         index.putChild("list.js", EncodingResourceWrapper(listjs, [GzipEncoderFactory()]))
         index.putChild("status", EncodingResourceWrapper(status, [GzipEncoderFactory()]))
         index.putChild("pack", EncodingResourceWrapper(pack, [GzipEncoderFactory()]))
+        index.putChild("packs.txt", EncodingResourceWrapper(packs, [GzipEncoderFactory()]))
 
     def send(self, host, number):
         if host not in self.master.downloads:
@@ -814,16 +827,11 @@ class Master(service.MultiService):
     def privilegedStartService(self):
         pass
 
-    def startService(self):
-        try:
-            data = json.loads(urllib2.urlopen("http://ifconfig.me/all.json", timeout=3).read())
-            self.raw_ip, self.raw_host = data["ip_addr"], data["remote_host"]
-        except:
-            log.err("Couldn't fetch remote IP and hostname")
-            self.raw_host = socket.getfqdn()
-            ips = filter(lambda ip: not ip.startswith("127.0.0.1") and not ip.startswith("192.168"), [ip[4][0] for ip in socket.getaddrinfo(self.raw_host, None)])
-            self.raw_ip = ips[0] if ips else "127.0.0.1"
+    def _addrIsUsable (self, addr):
+        ip = addr[4][0]
+        return not ip.startswith("127.0.0.1") and not ip.startswith("192.168")
 
+    def startService(self):
         self.updatePublicAddress()
 
         self.web = Web(self)
@@ -831,6 +839,7 @@ class Master(service.MultiService):
         self.web.log = lambda request: None
 
         self.packs = {}
+        self.pack_size = {}
         self.pack_lookup = {}
         self.pack_number = 1
 
@@ -879,8 +888,18 @@ class Master(service.MultiService):
     def updatePublicAddress(self):
         if self.config["address"] is not None:
             self.public_host = self.config["address"]
-            self.public_ip = filter(lambda ip: not ip.startswith("127.0.0.1") and not ip.startswith("192.168"), [ip[4][0] for ip in socket.getaddrinfo(self.public_host, None)])[0]
+            self.public_ip = [addr[4][0] for addr in socket.getaddrinfo(self.public_host, None) if self._addrIsUsable(addr)][0]
         else:
+            try:
+                conn = urllib2.urlopen("http://ifconfig.me/all.json", timeout=3)
+                data = json.loads(conn.read())
+                self.raw_ip, self.raw_host = data["ip_addr"], data["remote_host"]
+            except:
+                log.err("Couldn't fetch remote IP and hostname")
+                self.raw_host = socket.getfqdn()
+                ips = [addr[4][0] for addr in socket.getaddrinfo(self.raw_host, None) if self._addrIsUsable(addr)]
+                self.raw_ip = ips[0] if ips else "127.0.0.1"
+
             self.public_host = self.raw_host
             self.public_ip = self.raw_ip
 
@@ -906,14 +925,23 @@ class Master(service.MultiService):
             return
 
         # Restart observer if needed
-        include_diff = (config["include"] is not None and self.config["include"] is not None and set(config["include"]) != set(self.config["include"])) or (config["include"] is not None and self.config["include"] is None) or (config["include"] is None and self.config["include"] is not None)
-        exclude_diff = (config["exclude"] is not None and self.config["exclude"] is not None and set(config["exclude"]) != set(self.config["exclude"])) or (config["exclude"] is not None and self.config["exclude"] is None) or (config["exclude"] is None and self.config["exclude"] is not None)
+        include_diff = (config["include"] is not None and
+                        self.config["include"] is not None and
+                        (set(config["include"]) != set(self.config["include"])) or
+                        (config["include"] is not None and self.config["include"] is None) or
+                        (config["include"] is None and self.config["include"] is not None))
+        exclude_diff = (config["exclude"] is not None and
+                        self.config["exclude"] is not None and
+                        (set(config["exclude"]) != set(self.config["exclude"])) or
+                        (config["exclude"] is not None and self.config["exclude"] is None) or
+                        (config["exclude"] is None and self.config["exclude"] is not None))
         if config["watch_directory"] != self.config["watch_directory"] or include_diff or exclude_diff:
             self.stopObserver()
             self.startObserver()
 
         # Find what servers need joining, parting or modifying
-        new_ircs, old_ircs = dict([("{}:{:d}".format(d["host"], d["port"]), d) for d in config["irc"]]), dict([("{}:{:d}".format(d["host"], d["port"]), d) for d in self.config["irc"]])
+        new_ircs = dict([("{}:{:d}".format(d["host"], d["port"]), d) for d in config["irc"]])
+        old_ircs = dict([("{}:{:d}".format(d["host"], d["port"]), d) for d in self.config["irc"]])
 
         # If the host hasn't changed, then it just needs modifying
         for address in (set(new_ircs.keys()) & set(old_ircs.keys())):
@@ -965,7 +993,7 @@ class Master(service.MultiService):
         # Hack in shutting down the webserver if web_function == nothing
         if self.config["web_function"] == "nothing":
             old_paths = set()
-        
+
         if config["web_function"] == "nothing":
             new_paths = set()
 
@@ -984,7 +1012,10 @@ class Master(service.MultiService):
         log.msg("Reloaded config")
 
     def validateConfig(self, config):
-        keys = ["watch_directory", "crc_validation", "include", "exclude", "irc", "address", "port", "proxy_header", "endpoints", "global_concurrent", "ip_concurrent", "throttle", "timeout", "web_refresh", "infinity", "search_limit", "log_requests"]
+        keys = ["watch_directory", "crc_validation", "include", "exclude", "irc",
+                "address", "port", "proxy_header", "endpoints", "global_concurrent",
+                "ip_concurrent", "throttle", "timeout", "web_refresh", "infinity",
+                "search_limit", "log_requests"]
         for key in keys:
             if key not in config:
                 raise ConfigException("Missing config option \"{}\"".format(key))
@@ -1123,8 +1154,12 @@ class Master(service.MultiService):
             if expected_crc != actual_crc:
                 log.msg("CRC mismatch in potential pack. Expected = {}, Actual = {}, File = {}".format(expected_crc, actual_crc, filename))
                 return
-        
+
         self.packs[self.pack_number] = filename
+        try:
+            self.pack_size[self.pack_number] = os.path.getsize(filename)
+        except:
+            self.pack_size[self.pack_number] = 0
         self.pack_lookup[filename] = self.pack_number
 
         with open("txoffer.packlist", "a") as f:
@@ -1146,7 +1181,7 @@ class Master(service.MultiService):
             conn.send(name, number)
             self.queue.remove((conn, name, number))
 
-    def loadPacklist(self):        
+    def loadPacklist(self):
         try:
             with open("txoffer.packlist", "r") as f:
                 for index, path in enumerate(f.readlines()):
@@ -1155,12 +1190,16 @@ class Master(service.MultiService):
                         continue
                     number = index + 1
                     self.packs[number] = path
+                    try:
+                        self.pack_size[number] = os.path.getsize(path)
+                    except:
+                        self.pack_size[number] = 0
                     self.pack_lookup[path] = number
                 self.pack_number = len(self.packs) + 1
         except IOError:
             pass
 
-    def checkPacklist(self):        
+    def checkPacklist(self):
         folder_list = [self.config["watch_directory"]]
         file_list = []
         while folder_list:
@@ -1171,7 +1210,9 @@ class Master(service.MultiService):
                     file_list.extend([os.path.abspath(os.path.join(root, f)) for f in files])
             folder_list = new_folder_list
 
-        file_list = filter(lambda filename: filename not in self.pack_lookup and match_any_paths([filename], included_patterns=self.config["include"], excluded_patterns=self.config["exclude"], case_sensitive=False), file_list)
+        file_list = filter(lambda filename: filename not in self.pack_lookup and
+                      match_any_paths([filename], included_patterns=self.config["include"],
+                        excluded_patterns=self.config["exclude"], case_sensitive=False), file_list)
         file_list.sort(key=lambda path: os.path.basename(path))
 
         for f in file_list:
@@ -1212,7 +1253,7 @@ class Master(service.MultiService):
     def internalFileChanged(self, path):
         if not path.startswith(os.path.abspath(".")):
             return
-        
+
         if path in self.internal_scheduler:
             self.internal_scheduler[path].reset(10)
         else:

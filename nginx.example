@@ -1,0 +1,16 @@
+server {
+        server_name     dita.dozo.moe;
+        root /home/dozo/txoffer;
+        access_log /var/log/nginx/dita.access.log;
+        error_log /var/log/nginx/dita.error.log;
+                location / {
+                        proxy_read_timeout 86400;
+                        proxy_pass http://unix:${document_root}/dita.sock:;
+                        proxy_redirect off;
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                }
+        listen 80;
+}
