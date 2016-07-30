@@ -19,3 +19,12 @@ To run:
 To stop:
 
 `kill $(cat twistd.pid)`
+
+You need to configure txoffer.yaml first before using. I'll explain the most vague one in the readme. 
+
+watch_directory 
+The path where txoffer will check for packlist. Example :
+
+watch_directory: /your/directory
+
+For more information about the rest config, please refer to txoffer.yaml file.
