@@ -10,9 +10,10 @@
 
 #### PACK DETECTION ###
 
-# The directory to find pack files in
+# The directory to find pack files in. Replace watch with you directory
 #
 # watch_directory: watch
+# Example : watch_directory: /var/www/docs/
 
 watch_directory: watch
 
@@ -71,6 +72,8 @@ exclude: null
 #     channels:
 #       - "#txoffer"
 #       - "##txoffer password"
+#
+# Replace [] with command above
 
 irc: []
 
@@ -96,7 +99,7 @@ web_function: ddl
 address: null
 
 # Override automatic port detection with this value
-# Useful if proxying behind nginx
+# Useful if proxying behind nginx or apache
 #
 # port: 8080
 #
@@ -113,7 +116,10 @@ port: null
 
 proxy_header: null
 
-# A list of endpoints to listen on
+# A list of endpoints to listen on. 
+# This is the port where web interface can be accessed. 
+# Proxying with nginx or apache is useful if you don't want to type the port.
+# Use this or port, whichever suits you.
 #
 # endpoints:
 #   - tcp:80
@@ -131,6 +137,7 @@ endpoints: []
 # global_concurrent: 100
 #
 # Note: null can be used for unlimited connections
+# null is not recommended if your server doesn't have strong connection speed.
 
 global_concurrent: null
 
@@ -161,7 +168,7 @@ throttle: null
 
 timeout: 60
 
-# How often users waiting in the HTTP queue refresh the page
+# How often users waiting in the HTTP queue refresh the page in seconds
 # Should be less than the timeout
 #
 # web_refresh: 10
@@ -172,6 +179,7 @@ web_refresh: 40
 
 # The string to use for representing unlimited connections
 # or unlimited bandwidth
+# Can be replace with other unicode characters.
 #
 # infinity: "\u221E"
 
@@ -180,7 +188,7 @@ infinity: "\u221E"
 # Maximum number of search results
 # Search results include filenames, which can be quite long
 # Keep this low to prevent flooding
-#
+# 
 # search_limit: 5
 
 search_limit: 3
