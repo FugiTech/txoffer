@@ -163,15 +163,18 @@ throttle: null
 # Connection Timeout (in seconds)
 # How long to wait for the XDCC SEND or HTTP download
 # to be accepted and start
+# Set it to 2 if you want to enable download manager support. 
+# This will make high CPU and RAM usage. Not recommended for weak server.
 #
-# timeout: 15
+# timeout: 2
 
 timeout: 60
 
 # How often users waiting in the HTTP queue refresh the page in seconds
 # Should be less than the timeout
+# Set it to 1 if you want to enable download manager support. timeout must be 2 or higher.
 #
-# web_refresh: 10
+# web_refresh: 1
 
 web_refresh: 40
 
