@@ -1,0 +1,17 @@
+# Change 80 with your desired port
+# This port will be used to access web interface
+
+<VirtualHost *:80>
+
+	# ServerAdmin your@email.com
+	# ServerName example.com
+	# ServerAlias subdomain.example.com
+	
+	ProxyPreserveHost On
+	
+	# Assuming port or endpoint is 8080
+	
+	ProxyPass / http://0.0.0.0:8080/
+  	ProxyPassReverse / http://0.0.0.0:8080/
+  	
+</VirtualHost>
