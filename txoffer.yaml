@@ -74,6 +74,15 @@ exclude: null
 
 irc: []
 
+### URL ###
+#
+# URL used in announce messages and !list. Useful if address function borks your downloading.
+# For example I needed to set up address to my server ip to xdcc work properly, and I want my subdomain appear in messages,
+# even though I can't use revdns because of multiple bots on one server, and more subdomains.
+#
+#ddlurl: "http://rose.nalapl3.pl/"
+ddlurl: ""
+
 ### WEB SERVER ###
 
 # What function the webserver fulfills
