@@ -212,3 +212,8 @@ search_limit: 3
 # log_requests: true
 
 log_requests: true
+
+# Use that if you want to change what XDCC OWNER command shows
+# owner: "Nala_Alan"
+
+owner: "txoffer user"
