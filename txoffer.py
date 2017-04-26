@@ -338,6 +338,12 @@ class Bot(IRCClient):
                             self.notice(user, "You are #{:,d} in the queue".format(len(self.factory.master.queue)))
 
                     return
+                    
+            elif subcommand == "owner":
+                return self.notice(user, "Owner: {}".format(self.factory.master.config["owner"]))       
+
+            elif subcommand == "httplist":
+                return self.notice(user, ("{}/packs.txt".format(self.factory.master.config["ddlurl"])).replace("//packs", "/packs"))
 
             elif subcommand == "search":
                 message = "@find {}".format(args)
@@ -381,7 +387,7 @@ class Bot(IRCClient):
         if message == "!list":
             send_max = "{:,d}".format(self.factory.master.config["global_concurrent"]) if self.factory.master.config["global_concurrent"] is not None else self.factory.master.config["infinity"].encode("utf8")
             queue_max = self.factory.master.config["infinity"].encode("utf8")
-            self.notice(user, "Packlist: {} || Packs: {:,d} || Sending: {:,d} / {} || Queued: {:,d} / {}".format(self.factory.master.public_address, len(self.factory.master.packs), sum(map(len, self.factory.master.downloads.values())), send_max, len(self.factory.master.queue), queue_max))
+            self.notice(user, "Packlist and DDL: {} || Packs: {:,d} || Sending: {:,d} / {} || Queued: {:,d} / {}".format(self.factory.master.config["ddlurl"], len(self.factory.master.packs), sum(map(len, self.factory.master.downloads.values())), send_max, len(self.factory.master.queue), queue_max))
             return
 
         if message.startswith("@find ") or message.startswith("!find "):
@@ -1134,7 +1140,7 @@ class Master(service.MultiService):
             if bot.connection is not None:
                 for channel in bot.channels:
                     channel, _, password = channel.partition(" ")
-                    ddl = " or at {}pack/{:d}".format(self.public_address, pack) if self.config["web_function"] == "ddl" else ""
+                    ddl = " or at {}pack/{:d}".format(self.config["ddlurl"], pack) if self.config["web_function"] == "ddl" else ""
                     bot.connection.msg(channel, 'Pack #{0:d} added: {1} - Get it with "/msg {2} XDCC SEND {0:d}"{3}'.format(pack, name, bot.nickname, ddl))
 
     def addPack(self, filename):

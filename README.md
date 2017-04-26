@@ -1,6 +1,8 @@
-This is the current version running on CS|Tori and Vivid|Hii among a few other bots on Rizon.
-Supports outputting a packs.txt to integrate with other services.
-See [nginx.example](nginx.example) for example ddl setup.
+This is the current version running on Cona among a few other bots on Rizon.
+
+Supports outputting a packs.txt to integrate with other services. Trigger `xdcc httplist` returns packs.txt URL for the parser.
+
+## Installation
 
 To install:
 
@@ -19,3 +21,7 @@ To run:
 To stop:
 
 `kill $(cat twistd.pid)`
+
+You need to configure txoffer.yaml first before using.
+
+See [nginx.example](nginx.example) or [apache.example](apache.example) for example ddl setup.
