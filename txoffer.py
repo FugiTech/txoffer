@@ -159,6 +159,7 @@ class QuietPort(tcp.Port):
     # Exactly the same as tcp.Port but without log.msg
     def startListening(self):
         """Create and bind my socket, and begin listening on it.
+
         This is called on unserialization, and must be called after creating a
         server to begin listening on the specified port.
         """
@@ -337,7 +338,8 @@ class Bot(IRCClient):
                             self.notice(user, "You are #{:,d} in the queue".format(len(self.factory.master.queue)))
 
                     return
-
+            elif subcommand == "httplist":
+                return self.notice(user, ("{}/packs.txt".format(self.factory.master.config["ddlurl"])).replace("//packs", "/packs"))
             elif subcommand == "search":
                 message = "@find {}".format(args)
                 # Let @find handler take care of it
@@ -1116,8 +1118,8 @@ class Master(service.MultiService):
         if not isinstance(config["web_refresh"], int):
             raise ConfigException("web_refresh must be an int")
 
-        if config["web_refresh"] > config["timeout"] - 1:
-            raise ConfigException("web_refresh must be at least 1 seconds shorter than timeout. Use one second difference ONLY if you want to enable download manager usage and unlimited download")
+        if config["web_refresh"] > config["timeout"] - 5:
+            raise ConfigException("web_refresh must be at least 5 seconds shorter than timeout")
 
         if not isinstance(config["infinity"], basestring):
             raise ConfigException("infinity must be a string")
