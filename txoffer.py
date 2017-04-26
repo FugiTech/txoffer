@@ -338,13 +338,13 @@ class Bot(IRCClient):
                             self.notice(user, "You are #{:,d} in the queue".format(len(self.factory.master.queue)))
 
                     return
-
+                    
             elif subcommand == "owner":
-                return self.notice(user, "Owner: ".format(self.factory.master.config["owner"]))
+                return self.notice(user, "Owner: {}".format(self.factory.master.config["owner"]))       
 
             elif subcommand == "httplist":
-                return self.notice(user, ("{}/packs.txt".format(self.factory.master.config["ddlurl"])).replace("//packs", "/packs"))        
-                        
+                return self.notice(user, ("{}/packs.txt".format(self.factory.master.config["ddlurl"])).replace("//packs", "/packs"))
+
             elif subcommand == "search":
                 message = "@find {}".format(args)
                 # Let @find handler take care of it
