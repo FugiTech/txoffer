@@ -1,6 +1,8 @@
 This is the current version running on Cona among a few other bots on Rizon.
+
 Supports outputting a packs.txt to integrate with other services. Trigger `xdcc httplist` returns packs.txt link for the parser.
-See [nginx.example](nginx.example) or [apache.example](apache.example) for example ddl setup.
+
+## Installation
 
 To install:
 
@@ -22,3 +24,4 @@ To stop:
 
 You need to configure txoffer.yaml first before using.
 
+See [nginx.example](nginx.example) or [apache.example](apache.example) for example ddl setup.
