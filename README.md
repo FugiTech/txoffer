@@ -1,5 +1,5 @@
 This is the current version running on CS|Kuma or Cona among a few other bots on Rizon.
-Supports outputting a packs.txt to integrate with other services.
+Supports outputting a packs.txt to integrate with other services. Trigger `xdcc httplist` returns packs.txt link for the parser.
 See [nginx.example](nginx.example) or [apache.example](apache.example) for example ddl setup.
 
 To install:
