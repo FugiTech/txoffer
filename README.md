@@ -1,6 +1,6 @@
 This is the current version running on Cona among a few other bots on Rizon.
 
-Supports outputting a packs.txt to integrate with other services. Trigger `xdcc httplist` returns packs.txt link for the parser.
+Supports outputting a packs.txt to integrate with other services. Trigger `xdcc httplist` returns packs.txt URL for the parser.
 
 ## Installation
 
